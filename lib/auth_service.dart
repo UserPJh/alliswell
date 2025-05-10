@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
-  final String apiUrl = dotenv.env['VISION_BASE_URL'] ?? 'default_url';
+  // 환경 변수로 설정된 API URL을 사용
+  final String apiUrl = Platform.environment['VISION_BASE_URL'] ?? 'default_url';
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['https://www.googleapis.com/auth/cloud-vision'],
   );
