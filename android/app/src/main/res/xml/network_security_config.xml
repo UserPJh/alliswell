@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- HTTP 트래픽을 허용할 도메인 설정 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain><!-- 실제 도메인으로 변경 -->
+    </domain-config>
+</network-security-config>
