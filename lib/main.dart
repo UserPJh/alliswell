@@ -6,11 +6,9 @@ import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'auth_service.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: "assets/.env");
   runApp(MyApp());
 }
 
@@ -18,8 +16,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Vision API Example',
-      theme: ThemeData(primarySwatch: Colors.indigo),
+      title: '다 읽 어',
+      theme: ThemeData.dark(),
+      debugShowCheckedModeBanner: false,
       home: MyHomePage(),
     );
   }
@@ -39,9 +38,10 @@ class _MyHomePageState extends State<MyHomePage> {
   String _extractedText = '';
   File? _image;
   bool _isLoading = false;
-  final String serverUrl = 'http://127.0.0.1:5000/speak'; // Flask 서버 URL
 
-  // 이미지 촬영 후 텍스트 처리 및 음성 출력
+  // GitHub Secrets에서 환경 변수를 사용하도록 수정
+  final String serverUrl = Platform.environment['SERVER_URL'] ?? 'http://127.0.0.1:5000/speak'; // GitHub Secrets에서 SERVER_URL 가져오기
+
   Future<void> _pickImageAndProcess() async {
     final XFile? pickedImage = await _picker.pickImage(source: ImageSource.camera);
     if (pickedImage == null) return;
@@ -53,15 +53,11 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     try {
-      // 1. Google Vision API를 통해 텍스트 추출
       final text = await _authService.callVisionApi(pickedImage.path);
       if (text != null && text.trim().isNotEmpty) {
         setState(() => _extractedText = text);
-
-        // 2. 텍스트를 TTS로 음성으로 변환하여 바로 재생
         await _flutterTts.speak(text);
 
-        // 3. Flask 서버로 텍스트 전송 (옵션, 필요하다면 사용)
         final response = await http.post(
           Uri.parse(serverUrl),
           headers: {"Content-Type": "application/json"},
@@ -71,14 +67,16 @@ class _MyHomePageState extends State<MyHomePage> {
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           final audioUrl = data['url'];
-
-          // Flask에서 반환된 mp3 URL로 오디오 재생
           await _player.setAudioSource(AudioSource.uri(Uri.parse(audioUrl)));
           await _player.play();
         } else {
+          print("❌ 서버 오류: ${response.body}");
         }
-      } else {}
+      } else {
+        print("⚠️ Vision API 결과 없음.");
+      }
     } catch (e) {
+      print("❌ 오류 발생: $e");
     } finally {
       setState(() => _isLoading = false);
     }
@@ -87,24 +85,46 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Vision API로 사진 텍스트 읽기")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text('다 읽 어', style: TextStyle(fontSize: 28)),
+        centerTitle: true,
+        backgroundColor: Colors.indigo[900],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (_image != null) Image.file(_image!, height: 250),
-            SizedBox(height: 16),
-            Text(
-              _extractedText.isNotEmpty
-                  ? _extractedText
-                  : "사진에서 텍스트를 인식하면 여기에 표시됩니다.",
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 24),
+            if (_image != null)
+              Image.file(_image!, height: 250)
+            else
+              Icon(Icons.image, size: 150, color: Colors.white24),
+            SizedBox(height: 30),
             ElevatedButton.icon(
-              icon: Icon(Icons.camera_alt),
-              label: Text(_isLoading ? '처리 중...' : '사진 찍고 읽기'),
+              icon: Icon(Icons.camera_alt, size: 36),
+              label: Text(_isLoading ? '처리 중...' : '사진 찍기', style: TextStyle(fontSize: 26)),
               onPressed: _isLoading ? null : _pickImageAndProcess,
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 80),
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+            SizedBox(height: 30),
+            _isLoading
+                ? CircularProgressIndicator(color: Colors.white)
+                : Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  _extractedText.isNotEmpty ? _extractedText : '텍스트가 여기에 표시됩니다',
+                  style: TextStyle(fontSize: 22, color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
           ],
         ),
