@@ -1,10 +1,15 @@
+import os
 from flask import Flask, request, jsonify
 from gtts import gTTS
 import uuid
-import os
 
 app = Flask(__name__)
-AUDIO_FOLDER = "audio"
+
+# 환경 변수에서 설정값 읽기
+AUDIO_FOLDER = os.getenv("AUDIO_FOLDER", "audio")
+SERVER_HOST = os.getenv("SERVER_HOST", "0.0.0.0")
+SERVER_PORT = int(os.getenv("SERVER_PORT", 5000))
+
 os.makedirs(AUDIO_FOLDER, exist_ok=True)
 
 @app.route("/speak", methods=["POST"])
@@ -30,4 +35,4 @@ def get_audio(filename):
         return jsonify({"error": "File not found"}), 404
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host=SERVER_HOST, port=SERVER_PORT, debug=True)
