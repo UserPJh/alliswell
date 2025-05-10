@@ -19,19 +19,25 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3'
+          flutter-version: 'stable'
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run tests
-        run: flutter test
+      # 테스트 디렉토리가 존재하는지 확인하고, 없으면 넘어갑니다.
+      - name: Run tests (skip if no test directory)
+        run: |
+          if [ -d "test" ]; then
+            echo "Test directory found, running tests..."
+            flutter test
+          else
+            echo "No test directory found, skipping tests"
+          fi
 
       - name: Build APK
         run: flutter build apk --release
         env:
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}  # GitHub Secrets에서 CLIENT_ID를 환경 변수로 설정
-          API_KEY: ${{ secrets.API_KEY }}      # GitHub Secrets에서 API_KEY를 환경 변수로 설정
-          VISION_AUTH_TOKEN: ${{ secrets.VISION_AUTH_TOKEN }}  # GitHub Secrets에서 인증 토큰 설정
-          VISION_BASE_URL: ${{ secrets.VISION_BASE_URL }}      # GitHub Secrets에서 Vision API의 Base URL 설정
-          VISION_PROJECT_ID: ${{ secrets.VISION_PROJECT_ID }}  # GitHub Secrets에서 프로젝트 ID 설정
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          VISION_AUTH_TOKEN: ${{ secrets.VISION_AUTH_TOKEN }}
+          VISION_BASE_URL: ${{ secrets.VISION_BASE_URL }}
+          VISION_PROJECT_ID: ${{ secrets.VISION_PROJECT_ID }}
