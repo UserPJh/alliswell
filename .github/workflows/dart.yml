@@ -19,13 +19,18 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3' 
+          flutter-version: '3.29.3'
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run tests
-        run: flutter test
+      - name: Run tests (skip if no test directory)
+        run: |
+          if [ -d "test" ]; then
+            flutter test
+          else
+            echo "No test directory found, skipping tests"
+          fi
 
       - name: Build APK
         run: flutter build apk --release
