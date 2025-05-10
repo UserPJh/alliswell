@@ -1,37 +1,36 @@
-name: Flutter
+name: Flutter Build and Deploy
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - "master"
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - "master"
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Flutter SDK 설치
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3'  
+          flutter-version: '3.29.3' 
 
       - name: Install dependencies
         run: flutter pub get
 
-      # 프로젝트 분석
-      - name: Analyze project source
-        run: flutter analyze
-
-      # 테스트 실행 (옵션)
       - name: Run tests
         run: flutter test
 
-      # APK 빌드
       - name: Build APK
         run: flutter build apk --release
-
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          VISION_AUTH_TOKEN: ${{ secrets.VISION_AUTH_TOKEN }}
+          VISION_BASE_URL: ${{ secrets.VISION_BASE_URL }}
+          VISION_PROJECT_ID: ${{ secrets.VISION_PROJECT_ID }}
