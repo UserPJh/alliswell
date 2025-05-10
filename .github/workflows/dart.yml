@@ -1,0 +1,37 @@
+name: Flutter
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Flutter SDK 설치
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'  # 안정적인 Flutter 버전 설치 (필요시 다른 버전 지정 가능)
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 프로젝트 분석
+      - name: Analyze project source
+        run: flutter analyze
+
+      # 테스트 실행 (옵션)
+      - name: Run tests
+        run: flutter test
+
+      # APK 빌드
+      - name: Build APK
+        run: flutter build apk --release
+
