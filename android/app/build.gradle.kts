@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.hac"
-    compileSdkVersion(33)// = flutter.compileSdkVersion
+    compileSdkVersion(34)// = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -26,7 +26,7 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
 	minSdkVersion(26)
-	targetSdkVersion(33)
+	targetSdkVersion(34)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
